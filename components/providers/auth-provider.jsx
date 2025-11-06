@@ -1,30 +1,13 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { api } from "@/lib/api-client"
 
-interface User {
-  id: string
-  uid: string
-  email: string
-  displayName?: string
-  role?: string
-}
+const AuthContext = createContext(undefined)
 
-interface AuthContextType {
-  user: User | null
-  token: string | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string, displayName: string) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (email, password) => {
     setLoading(true)
     try {
       const mockToken = `firebase_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -55,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Call backend login endpoint
       const response = await api.auth.login({ uid: email, email }, mockToken)
 
-      const userData: User = {
+      const userData = {
         id: response.user.id,
         uid: response.user.uid,
         email: response.user.email,
@@ -75,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signup = async (email: string, password: string, displayName: string) => {
+  const signup = async (email, password, displayName) => {
     setLoading(true)
     try {
       const mockToken = `firebase_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -83,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Call backend signup endpoint
       const response = await api.auth.signup({ uid: email, email, displayName }, mockToken)
 
-      const userData: User = {
+      const userData = {
         id: response.user.id,
         uid: response.user.uid,
         email: response.user.email,

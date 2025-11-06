@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -22,7 +20,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
 
-  const checkPasswordStrength = (pwd: string) => {
+  const checkPasswordStrength = (pwd) => {
     let strength = 0
     if (pwd.length >= 8) strength++
     if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++
@@ -31,12 +29,12 @@ export default function SignupPage() {
     setPasswordStrength(strength)
   }
 
-  const handlePasswordChange = (pwd: string) => {
+  const handlePasswordChange = (pwd) => {
     setPassword(pwd)
     checkPasswordStrength(pwd)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
 
