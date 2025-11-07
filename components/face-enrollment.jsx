@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
 
 export default function FaceEnrollment() {

@@ -1,25 +1,17 @@
-import admin from "firebase-admin"
-import dotenv from "dotenv"
+import admin from "firebase-admin";
+import serviceAccount from "../config/fitness-x-feebd-firebase-adminsdk-fbsvc-5171ffe5ac.json" assert { type: "json" };
 
-dotenv.config()
-
-const serviceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-})
 
 export const verifyToken = async (token) => {
   try {
-    const decoded = await admin.auth().verifyIdToken(token)
-    return decoded
+    return await admin.auth().verifyIdToken(token);
   } catch (error) {
-    throw new Error("Invalid token")
+    console.error("Firebase verify error:", error.message);
+    throw new Error("Invalid token");
   }
-}
-
-export default admin
+};

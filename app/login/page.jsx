@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { Dumbbell, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {

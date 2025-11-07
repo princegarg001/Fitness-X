@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
 
 export default function GymFinder() {

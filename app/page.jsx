@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuth } from "@/hooks/use-auth"
 import LandingPage from "@/components/landing-page"
 import DashboardLayout from "@/components/dashboard-layout"
 
