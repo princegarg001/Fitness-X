@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { SendHorizontal } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
-export default function AIChatbot({ user }) {
+export default function AIChatbot() {
+  const { user, token } = useAuth()
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -28,7 +31,10 @@ export default function AIChatbot({ user }) {
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!input.trim() || loading) return
+    if (!input.trim() || loading || !token) {
+      console.log("[v0] Cannot send: input=" + input.trim() + ", loading=" + loading + ", token=" + !!token)
+      return
+    }
 
     const userMessage = {
       id: messages.length + 1,
@@ -45,31 +51,37 @@ export default function AIChatbot({ user }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-        message: input,
-        userId: user?.uid,
-        userName: user?.displayName || "User",
+          message: input,
+          userId: user?.uid,
+          userName: user?.displayName || "User",
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to get response")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+        console.log("[v0] API Error - Status:", response.status, "Data:", errorData)
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
 
       const data = await response.json()
+      console.log("[v0] Response received:", data)
 
       const botMessage = {
         id: messages.length + 2,
         type: "bot",
-        content: data.recommendation,
+        content: data.recommendation || "I'm processing your request. Please try again.",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
-      console.error("Error:", error)
+      console.error("[v0] Chat error:", error.message)
       const errorMessage = {
         id: messages.length + 2,
         type: "bot",
-        content: "Sorry, I encountered an error. Please try again later.",
+        content: `Sorry, I encountered an error: ${error.message}. Please make sure you're logged in.`,
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
@@ -79,27 +91,31 @@ export default function AIChatbot({ user }) {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-6 shadow-lg">
+      <div className="bg-primary text-primary-foreground p-6 shadow-lg rounded-t-lg">
         <h1 className="text-2xl font-bold">Fitness AI Assistant</h1>
-        <p className="text-sm opacity-90">Get personalized recommendations</p>
+        <p className="text-sm opacity-90">Get personalized workout recommendations</p>
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-6">
-        <ScrollArea className="flex-1 mb-4">
+      <div className="flex-1 overflow-hidden flex flex-col bg-card border border-border">
+        <ScrollArea className="flex-1 p-4 md:p-6">
           <div className="space-y-4 pr-4">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
                 <Card
                   className={`max-w-md md:max-w-lg px-4 py-3 ${
-                    msg.type === "user" ? "bg-primary text-primary-foreground" : "bg-card text-foreground border-border"
+                    msg.type === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/10 text-foreground border-secondary/20"
                   }`}
                 >
                   <p className="text-sm md:text-base leading-relaxed">{msg.content}</p>
                   <span
-                    className={`text-xs mt-2 block opacity-70 ${msg.type === "user" ? "text-primary-foreground" : ""}`}
+                    className={`text-xs mt-2 block opacity-70 ${
+                      msg.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                    }`}
                   >
                     {msg.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -111,7 +127,7 @@ export default function AIChatbot({ user }) {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <Card className="bg-card text-foreground border-border px-4 py-3">
+                <Card className="bg-secondary/10 text-foreground border-secondary/20 px-4 py-3">
                   <div className="flex space-x-2">
                     <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-100"></div>
@@ -125,7 +141,7 @@ export default function AIChatbot({ user }) {
         </ScrollArea>
 
         {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+        <form onSubmit={handleSendMessage} className="flex gap-2 p-4 border-t border-border">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -133,8 +149,13 @@ export default function AIChatbot({ user }) {
             disabled={loading}
             className="flex-1"
           />
-          <Button type="submit" disabled={loading || !input.trim()} className="bg-primary hover:bg-primary/90">
-            {loading ? "..." : "Send"}
+          <Button
+            type="submit"
+            disabled={loading || !input.trim()}
+            className="bg-primary hover:bg-primary/90"
+            size="icon"
+          >
+            <SendHorizontal className="w-4 h-4" />
           </Button>
         </form>
       </div>

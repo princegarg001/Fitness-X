@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import AIChatbot from "@/components/ai-chatbot"
 import { useEffect } from "react"

@@ -9,10 +9,15 @@ export const getNearbyGyms = async (req, res) => {
       return res.status(400).json({ error: "Latitude and longitude required" })
     }
 
+    console.log(`[v0] Fetching gyms for lat=${lat}, lng=${lng}, km=${km}`)
+
     const gyms = await findNearbyGyms(Number.parseFloat(lat), Number.parseFloat(lng), Number.parseFloat(km))
+
+    console.log(`[v0] Found ${gyms.length} gyms`)
 
     res.json({ gyms, count: gyms.length })
   } catch (error) {
+    console.error("[v0] Gym fetch error:", error)
     res.status(500).json({ error: error.message })
   }
 }
@@ -42,7 +47,7 @@ export const getGymDetails = async (req, res) => {
 
 export const createGym = async (req, res) => {
   try {
-    const { name, address, city, state, country, zipCode, coordinates, amenities, hours } = req.body
+    const { name, address, city, state, country, zipCode, coordinates, amenities, hours, phone, website } = req.body
 
     const gym = new Gym({
       name,
@@ -51,6 +56,8 @@ export const createGym = async (req, res) => {
       state,
       country,
       zipCode,
+      phone,
+      website,
       amenities,
       hours,
       location: {
@@ -68,9 +75,9 @@ export const createGym = async (req, res) => {
 
 export const updateGym = async (req, res) => {
   try {
-    const { name, address, city, state, country, zipCode, coordinates, amenities, hours } = req.body
+    const { name, address, city, state, country, zipCode, coordinates, amenities, hours, phone, website } = req.body
 
-    const updateData = { name, address, city, state, country, zipCode, amenities, hours }
+    const updateData = { name, address, city, state, country, zipCode, phone, website, amenities, hours }
 
     if (coordinates) {
       updateData.location = {
