@@ -10,8 +10,8 @@ export default function ChatbotPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "MEMBER")) {
-      router.push("/")
+    if (!loading && !user) {
+      router.push("/login")
     }
   }, [user, loading, router])
 
@@ -25,9 +25,7 @@ export default function ChatbotPage() {
     )
   }
 
-  if (!user || user.role !== "MEMBER") {
-    return null
-  }
+  if (!user) return null // while redirecting
 
   return (
     <div className="min-h-screen bg-background">

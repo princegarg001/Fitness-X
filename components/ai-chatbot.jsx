@@ -47,9 +47,9 @@ export default function AIChatbot({ user }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: input,
-          userId: user.id,
-          userName: user.name,
+        message: input,
+        userId: user?.uid,
+        userName: user?.displayName || "User",
         }),
       })
 
