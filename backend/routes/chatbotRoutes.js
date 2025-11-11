@@ -1,10 +1,9 @@
-import express from "express"
-import { getRecommendation } from "../controllers/chatbotController.js"
-import { authenticate } from "../middleware/authMiddleware.js"
-import { authorize } from "../middleware/rbacMiddleware.js"
+import express from "express";
+import { getRecommendation } from "../controllers/chatbotController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/recommendations", authenticate, authorize(["MEMBER"]), getRecommendation)
+router.post("/recommendations", authMiddleware, getRecommendation);
 
-export default router
+export default router;

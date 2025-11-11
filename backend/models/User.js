@@ -9,17 +9,12 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["admin", "trainer", "member"], default: "member" },
     bio: String,
     gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym" },
-    faceTemplates: [
-      {
-        embedding: [Number],
-        capturedAt: { type: Date, default: Date.now },
-      },
-    ],
     stats: {
       totalWorkouts: { type: Number, default: 0 },
       totalCalories: { type: Number, default: 0 },
       totalDuration: { type: Number, default: 0 },
     },
+    assignedTrainer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },

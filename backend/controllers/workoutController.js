@@ -87,25 +87,36 @@ export const getWorkoutStats = async (req, res) => {
 
 export const assignWorkout = async (req, res) => {
   try {
-    const { memberId, instructions, dueDate } = req.body
+    const { memberId, exerciseName, category, duration, caloriesBurned, sets, reps, weight, notes, dueDate } = req.body
     const trainer = await User.findOne({ uid: req.user.uid })
 
-    const workout = await Workout.findByIdAndUpdate(
-      req.params.id,
-      {
-        assignedTrainer: trainer._id,
-        assignedTo: memberId,
-        instructions,
-        dueDate,
-        isAssigned: true,
-      },
-      { new: true },
-    )
+    // Validate required fields
+    if (!memberId || !exerciseName || !duration || !caloriesBurned || !dueDate) {
+      return res.status(400).json({ error: "Missing required fields" })
+    }
+
+    // Create a new assigned workout with detailed fields
+    const workout = new Workout({
+      userId: memberId, // Assigned to the member
+      trainerId: trainer._id,
+      exerciseName,
+      category: category || "other",
+      duration: Number.parseInt(duration),
+      caloriesBurned: Number.parseInt(caloriesBurned),
+      sets: sets ? Number.parseInt(sets) : undefined,
+      reps: reps ? Number.parseInt(reps) : undefined,
+      weight: weight ? Number.parseInt(weight) : undefined,
+      notes,
+      dueDate: new Date(dueDate),
+      isAssigned: true,
+    })
+
+    await workout.save()
 
     await SessionEvent.create({
       userId: trainer._id,
       eventType: "workout_assigned",
-      metadata: { workoutId: workout._id, memberId, instructions },
+      metadata: { workoutId: workout._id, memberId, exerciseName },
     })
 
     res.json({ workout })
@@ -116,17 +127,32 @@ export const assignWorkout = async (req, res) => {
 
 export const getAssignedWorkouts = async (req, res) => {
   try {
-    const trainer = await User.findOne({ uid: req.user.uid })
+    const user = await User.findOne({ uid: req.user.uid })
     const { limit = 20, skip = 0 } = req.query
 
-    const assignedWorkouts = await Workout.find({ assignedTrainer: trainer._id, isAssigned: true })
-      .sort({ dueDate: 1 })
+    let query = {}
+    if (user.role === "trainer") {
+      // Trainers see workouts they assigned to members
+      query = {
+        trainerId: user._id,
+        isAssigned: true,
+      }
+    } else {
+      // Members see workouts assigned to them
+      query = {
+        userId: user._id,
+        isAssigned: true,
+      }
+    }
+
+    const assignedWorkouts = await Workout.find(query)
+      .sort({ createdAt: -1 })
       .limit(Number.parseInt(limit))
       .skip(Number.parseInt(skip))
       .populate("userId", "displayName email")
-      .populate("assignedTo", "displayName email")
+      .populate("trainerId", "displayName email")
 
-    const total = await Workout.countDocuments({ assignedTrainer: trainer._id, isAssigned: true })
+    const total = await Workout.countDocuments(query)
 
     res.json({ assignedWorkouts, total, limit: Number.parseInt(limit), skip: Number.parseInt(skip) })
   } catch (error) {
@@ -148,6 +174,14 @@ export const completeWorkout = async (req, res) => {
       },
       { new: true },
     )
+
+    await User.findByIdAndUpdate(user._id, {
+      $inc: {
+        "stats.totalWorkouts": 1,
+        "stats.totalCalories": workout.caloriesBurned,
+        "stats.totalDuration": workout.duration,
+      },
+    })
 
     await SessionEvent.create({
       userId: user._id,

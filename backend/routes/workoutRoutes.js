@@ -17,8 +17,9 @@ router.get("/", listWorkouts)
 router.get("/stats/breakdown", getWorkoutStats)
 
 // Trainers can assign workouts to members
+router.post("/assign", requireRole("trainer", "admin"), assignWorkout)
 router.post("/:id/assign", requireRole("trainer", "admin"), assignWorkout)
-router.get("/assigned", requireRole("trainer", "admin"), getAssignedWorkouts)
+router.get("/assigned", requireRole("member", "trainer", "admin"), getAssignedWorkouts)
 
 // Members can mark workouts as complete
 router.patch("/:id/complete", requireRole("member"), completeWorkout)

@@ -40,7 +40,6 @@ export const PERMISSIONS = {
   member: {
     workouts: ["create", "read"],
     gyms: ["read", "search"],
-    face: ["enroll", "verify"],
     analytics: ["view-own"],
   },
 }

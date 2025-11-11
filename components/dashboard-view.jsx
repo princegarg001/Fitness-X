@@ -28,6 +28,8 @@ export default function DashboardView() {
     streak: 0,
   })
   const [leaderboard, setLeaderboard] = useState([])
+  const [workoutData, setWorkoutData] = useState([])
+  const [exerciseBreakdown, setExerciseBreakdown] = useState([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -37,12 +39,18 @@ export default function DashboardView() {
         setStats({
           totalWorkouts: response.stats.totalWorkouts,
           totalCalories: Math.round(response.stats.totalCalories),
-          thisWeek: Math.floor(response.stats.totalWorkouts / 4),
-          streak: 7,
+          thisWeek: response.stats.thisWeek,
+          streak: response.stats.streak,
         })
 
+        const weeklyData = await api.analytics.getWeeklyActivity(token)
+        setWorkoutData(weeklyData.weeklyActivity || [])
+
+        const breakdownData = await api.analytics.getExerciseBreakdown(token)
+        setExerciseBreakdown(breakdownData.exerciseBreakdown || [])
+
         const leaderboardData = await api.analytics.getLeaderboard("week", token)
-        setLeaderboard(leaderboardData.leaderboard)
+        setLeaderboard(leaderboardData.leaderboard || [])
       } catch (error) {
         console.error("[v0] Error fetching stats:", error)
       }
@@ -50,23 +58,6 @@ export default function DashboardView() {
 
     fetchStats()
   }, [token])
-
-  const workoutData = [
-    { day: "Mon", workouts: 2, calories: 450 },
-    { day: "Tue", workouts: 1, calories: 320 },
-    { day: "Wed", workouts: 3, calories: 650 },
-    { day: "Thu", workouts: 2, calories: 480 },
-    { day: "Fri", workouts: 2, calories: 520 },
-    { day: "Sat", workouts: 1, calories: 280 },
-    { day: "Sun", workouts: 0, calories: 0 },
-  ]
-
-  const exerciseBreakdown = [
-    { name: "Cardio", value: 40 },
-    { name: "Strength", value: 35 },
-    { name: "Flexibility", value: 15 },
-    { name: "Sports", value: 10 },
-  ]
 
   const colors = ["#5DD4D4", "#FFD966", "#FF6B6B", "#A78BFA"]
 
@@ -135,46 +126,58 @@ export default function DashboardView() {
             <CardDescription>Workouts and calories this week</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={workoutData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="workouts" fill="#5DD4D4" name="Workouts" />
-                <Bar yAxisId="right" dataKey="calories" fill="#FFD966" name="Calories" />
-              </BarChart>
-            </ResponsiveContainer>
+            {workoutData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={workoutData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="workouts" fill="#5DD4D4" name="Workouts" />
+                  <Bar yAxisId="right" dataKey="calories" fill="#FFD966" name="Calories" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No workout data for this week
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Exercise Breakdown</CardTitle>
-            <CardDescription>Distribution of exercise types</CardDescription>
+            <CardDescription>Distribution of exercise types this week</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={exerciseBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${entry.value}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {exerciseBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {exerciseBreakdown.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={exerciseBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(entry) => `${entry.name}: ${entry.value}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {exerciseBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No exercise data for this week
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -189,15 +192,15 @@ export default function DashboardView() {
           <div className="space-y-4">
             {leaderboard.length > 0 ? (
               leaderboard.slice(0, 5).map((member, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
+                <div key={member._id} className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="text-lg font-bold text-primary/60">#{index + 1}</div>
                     <div>
-                      <p className="font-medium">{member.displayName}</p>
-                      <p className="text-xs text-muted-foreground">{member.points || 0} points</p>
+                      <p className="font-medium">{member.user?.displayName || member.user?.email || "Unknown"}</p>
+                      <p className="text-xs text-muted-foreground">{member.totalCalories || 0} calories burned</p>
                     </div>
                   </div>
-                  <div className="text-sm font-semibold">{member.workouts || 0} workouts</div>
+                  <div className="text-sm font-semibold">{member.workoutCount || 0} workouts</div>
                 </div>
               ))
             ) : (

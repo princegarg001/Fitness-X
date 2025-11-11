@@ -88,10 +88,39 @@ export const getUserStats = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
 
+    const startOfWeek = new Date()
+    startOfWeek.setDate(startOfWeek.getDate() - 7)
+
+    const thisWeekWorkouts = await Workout.countDocuments({
+      userId: user._id,
+      createdAt: { $gte: startOfWeek },
+    })
+
+    const allWorkouts = await Workout.find({ userId: user._id }).sort({ createdAt: -1 }).select("createdAt")
+
+    let streak = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const workoutDates = new Set()
+    allWorkouts.forEach((workout) => {
+      const workoutDate = new Date(workout.createdAt)
+      workoutDate.setHours(0, 0, 0, 0)
+      workoutDates.add(workoutDate.getTime())
+    })
+
+    const currentDate = new Date(today)
+    while (workoutDates.has(currentDate.getTime())) {
+      streak++
+      currentDate.setDate(currentDate.getDate() - 1)
+    }
+
     const stats = {
       totalWorkouts: user.stats.totalWorkouts,
       totalCalories: user.stats.totalCalories,
       totalDuration: user.stats.totalDuration,
+      thisWeek: thisWeekWorkouts,
+      streak: streak,
       averageCaloriesPerWorkout:
         user.stats.totalWorkouts > 0 ? (user.stats.totalCalories / user.stats.totalWorkouts).toFixed(2) : 0,
       averageDurationPerWorkout:
@@ -180,6 +209,89 @@ export const getTrainerAssignments = async (req, res) => {
     ])
 
     res.json({ assignments })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const getWeeklyActivity = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.user.uid })
+
+    const startOfWeek = new Date()
+    startOfWeek.setDate(startOfWeek.getDate() - 7)
+
+    const workouts = await Workout.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          createdAt: { $gte: startOfWeek },
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          workouts: { $sum: 1 },
+          calories: { $sum: "$caloriesBurned" },
+        },
+      },
+    ])
+
+    const dayMap = { 1: "Sun", 2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri", 7: "Sat" }
+    const weekData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
+      day,
+      workouts: 0,
+      calories: 0,
+    }))
+
+    workouts.forEach((item) => {
+      const dayName = dayMap[item._id]
+      const index = weekData.findIndex((d) => d.day === dayName)
+      if (index !== -1) {
+        weekData[index].workouts = item.workouts
+        weekData[index].calories = Math.round(item.calories)
+      }
+    })
+
+    res.json({ weeklyActivity: weekData })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const getExerciseBreakdown = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.user.uid })
+
+    const startOfWeek = new Date()
+    startOfWeek.setDate(startOfWeek.getDate() - 7)
+
+    const breakdown = await Workout.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          createdAt: { $gte: startOfWeek },
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+          calories: { $sum: "$caloriesBurned" },
+        },
+      },
+    ])
+
+    const total = breakdown.reduce((sum, item) => sum + item.count, 0)
+
+    const exerciseBreakdown = breakdown.map((item) => ({
+      name: item._id ? item._id.charAt(0).toUpperCase() + item._id.slice(1) : "Other",
+      value: total > 0 ? Math.round((item.count / total) * 100) : 0,
+      count: item.count,
+      calories: Math.round(item.calories),
+    }))
+
+    res.json({ exerciseBreakdown })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

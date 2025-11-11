@@ -47,13 +47,16 @@ export const login = async (req, res) => {
     let user = await User.findOne({ uid })
 
     if (!user) {
+      // This prevents overwriting manually created admin/trainer accounts
       user = new User({
         uid,
         email,
-        role: "member",
+        role: "member", // Default role for new signups only
       })
       await user.save()
     }
+
+    console.log("[v0] Login successful for user:", user.email, "with role:", user.role)
 
     await SessionEvent.create({
       userId: user._id,

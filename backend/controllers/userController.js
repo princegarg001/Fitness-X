@@ -26,86 +26,12 @@ export const updateProfile = async (req, res) => {
   }
 }
 
-export const enrollFace = async (req, res) => {
-  try {
-    const { embedding } = req.body
-
-    if (!embedding || !Array.isArray(embedding)) {
-      return res.status(400).json({ error: "Invalid embedding" })
-    }
-
-    const user = await User.findOneAndUpdate(
-      { uid: req.user.uid },
-      {
-        $push: {
-          faceTemplates: {
-            embedding,
-            capturedAt: new Date(),
-          },
-        },
-      },
-      { new: true },
-    )
-
-    res.json({
-      message: "Face template saved",
-      templatesCount: user.faceTemplates.length,
-    })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
-
-export const verifyFace = async (req, res) => {
-  try {
-    const { embedding } = req.body
-
-    const user = await User.findOne({ uid: req.user.uid })
-
-    if (!user || user.faceTemplates.length === 0) {
-      return res.status(400).json({ error: "No face templates enrolled" })
-    }
-
-    // Simple distance-based matching
-    let bestMatch = null
-    let minDistance = Number.POSITIVE_INFINITY
-    const threshold = 0.6
-
-    for (const template of user.faceTemplates) {
-      let distance = 0
-      for (let i = 0; i < embedding.length; i++) {
-        distance += Math.pow(embedding[i] - template.embedding[i], 2)
-      }
-      distance = Math.sqrt(distance)
-
-      if (distance < minDistance) {
-        minDistance = distance
-        bestMatch = template
-      }
-    }
-
-    const matched = minDistance <= threshold
-
-    res.json({
-      matched,
-      distance: minDistance,
-      threshold,
-    })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
-
 export const listUsers = async (req, res) => {
   try {
     const { role, limit = 50, skip = 0 } = req.query
 
     const query = role ? { role } : {}
-    const users = await User.find(query)
-      .select("-faceTemplates")
-      .limit(Number.parseInt(limit))
-      .skip(Number.parseInt(skip))
-      .populate("gym")
+    const users = await User.find(query).limit(Number.parseInt(limit)).skip(Number.parseInt(skip)).populate("gym")
 
     const total = await User.countDocuments(query)
 
@@ -144,6 +70,65 @@ export const deleteUser = async (req, res) => {
     }
 
     res.json({ message: "User deleted successfully" })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const assignTrainerToMember = async (req, res) => {
+  try {
+    const { memberId, trainerId } = req.body
+    const admin = await User.findOne({ uid: req.user.uid })
+
+    if (admin.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can assign trainers" })
+    }
+
+    const trainer = await User.findById(trainerId)
+    if (!trainer || trainer.role !== "trainer") {
+      return res.status(400).json({ error: "Invalid trainer selected" })
+    }
+
+    const updatedMember = await User.findByIdAndUpdate(
+      memberId,
+      { assignedTrainer: trainerId },
+      { new: true },
+    ).populate("assignedTrainer", "displayName email")
+
+    res.json({ message: "Trainer assigned successfully", member: updatedMember })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const removeTrainerFromMember = async (req, res) => {
+  try {
+    const { memberId } = req.body
+    const admin = await User.findOne({ uid: req.user.uid })
+
+    if (admin.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can remove trainers" })
+    }
+
+    const updatedMember = await User.findByIdAndUpdate(memberId, { assignedTrainer: null }, { new: true })
+
+    res.json({ message: "Trainer removed successfully", member: updatedMember })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const getAssignedMembers = async (req, res) => {
+  try {
+    const trainer = await User.findOne({ uid: req.user.uid })
+
+    if (trainer.role !== "trainer") {
+      return res.status(403).json({ error: "Only trainers can view assigned members" })
+    }
+
+    const members = await User.find({ assignedTrainer: trainer._id })
+
+    res.json({ members })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
