@@ -1,12 +1,13 @@
-import Workout from "../models/Workout.js"
-import User from "../models/User.js"
 import SessionEvent from "../models/SessionEvent.js"
+import User from "../models/User.js"
+import Workout from "../models/Workout.js"
 
 export const createWorkout = async (req, res) => {
   try {
     const { exerciseName, category, duration, caloriesBurned, sets, reps, weight, notes, location } = req.body
 
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const workout = new Workout({
       userId: user._id,
@@ -23,12 +24,12 @@ export const createWorkout = async (req, res) => {
 
     await workout.save()
 
-    // Update user stats
+    // Update user stats immediately when workout is created (logged)
     await User.findByIdAndUpdate(user._id, {
       $inc: {
         "stats.totalWorkouts": 1,
-        "stats.totalCalories": caloriesBurned,
-        "stats.totalDuration": duration,
+        "stats.totalCalories": Number(caloriesBurned) || 0,
+        "stats.totalDuration": Number(duration) || 0,
       },
     })
 
@@ -47,6 +48,7 @@ export const createWorkout = async (req, res) => {
 export const listWorkouts = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
     const { limit = 20, skip = 0 } = req.query
 
     const workouts = await Workout.find({ userId: user._id })
@@ -66,6 +68,7 @@ export const listWorkouts = async (req, res) => {
 export const getWorkoutStats = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const stats = await Workout.aggregate([
       { $match: { userId: user._id } },
@@ -89,15 +92,20 @@ export const assignWorkout = async (req, res) => {
   try {
     const { memberId, exerciseName, category, duration, caloriesBurned, sets, reps, weight, notes, dueDate } = req.body
     const trainer = await User.findOne({ uid: req.user.uid })
+    if (!trainer) return res.status(401).json({ error: "Unauthorized" })
 
     // Validate required fields
     if (!memberId || !exerciseName || !duration || !caloriesBurned || !dueDate) {
       return res.status(400).json({ error: "Missing required fields" })
     }
 
+    // Ensure the member exists
+    const member = await User.findById(memberId)
+    if (!member) return res.status(404).json({ error: "Member not found" })
+
     // Create a new assigned workout with detailed fields
     const workout = new Workout({
-      userId: memberId, // Assigned to the member
+      userId: member._id, // Assigned to the member
       trainerId: trainer._id,
       exerciseName,
       category: category || "other",
@@ -128,6 +136,7 @@ export const assignWorkout = async (req, res) => {
 export const getAssignedWorkouts = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
     const { limit = 20, skip = 0 } = req.query
 
     let query = {}
@@ -164,6 +173,7 @@ export const completeWorkout = async (req, res) => {
   try {
     const { completionNotes } = req.body
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const workout = await Workout.findByIdAndUpdate(
       req.params.id,
@@ -175,11 +185,13 @@ export const completeWorkout = async (req, res) => {
       { new: true },
     )
 
+    if (!workout) return res.status(404).json({ error: "Workout not found" })
+
     await User.findByIdAndUpdate(user._id, {
       $inc: {
         "stats.totalWorkouts": 1,
-        "stats.totalCalories": workout.caloriesBurned,
-        "stats.totalDuration": workout.duration,
+        "stats.totalCalories": Number(workout.caloriesBurned) || 0,
+        "stats.totalDuration": Number(workout.duration) || 0,
       },
     })
 

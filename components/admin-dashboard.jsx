@@ -1,11 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -16,7 +14,10 @@ import {
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, Activity, Edit2, Trash2, Shield } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { api } from "@/lib/api-client"
+import { Activity, Edit2, Shield, Trash2, TrendingUp, Users } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function AdminDashboard() {
   const { token } = useAuth()
@@ -144,13 +145,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
-        <p className="text-muted-foreground">Manage users and system settings</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+          <p className="text-muted-foreground">Manage users and system settings</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Total Users
@@ -163,7 +167,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Members
@@ -176,7 +180,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Trainers
@@ -189,7 +193,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Admins

@@ -1,23 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { MotivationalTips } from "@/components/motivational-tips"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, Dumbbell, Flame, TrendingUp } from "lucide-react"
+import { useEffect, useState } from "react"
 import {
-  BarChart,
   Bar,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts"
-import { TrendingUp, Flame, Calendar, Dumbbell } from "lucide-react"
 
 export default function DashboardView() {
   const { token } = useAuth()
@@ -63,6 +65,13 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">Track your fitness progress</p>
+        </div>
+        <ThemeToggle />
+      </div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
@@ -117,6 +126,9 @@ export default function DashboardView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Motivational Tips */}
+      <MotivationalTips />
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

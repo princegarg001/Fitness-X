@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { SendHorizontal } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { SendHorizontal } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 export default function AIChatbot() {
   const { user, token } = useAuth()
@@ -92,7 +93,14 @@ export default function AIChatbot() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl">
+    <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">AI Coach</h2>
+          <p className="text-muted-foreground">Get personalized fitness advice</p>
+        </div>
+        <ThemeToggle />
+      </div>
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-6 shadow-lg rounded-t-lg">
         <h1 className="text-2xl font-bold">Fitness AI Assistant</h1>

@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, Medal, Award, TrendingUp } from "lucide-react"
+import { Award, Medal, TrendingUp, Trophy } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function LeaderboardView() {
   const { token } = useAuth()
@@ -65,6 +66,13 @@ export default function LeaderboardView() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Leaderboard</h2>
+          <p className="text-muted-foreground">Top performers in the community</p>
+        </div>
+        <ThemeToggle />
+      </div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

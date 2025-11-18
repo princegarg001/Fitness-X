@@ -1,4 +1,7 @@
 import AuthWrapper from "@/components/providers/auth-wrapper"; // ✅ new wrapper
+import { TipsProvider } from "@/components/providers/tips-provider";
+import { WorkoutProvider } from "@/components/providers/workout-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -13,11 +16,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <AuthWrapper> {/* ✅ only this is client */}
-          {children}
-        </AuthWrapper>
+        <ThemeProvider>
+          <AuthWrapper> {/* ✅ only this is client */}
+            <WorkoutProvider>
+              <TipsProvider>
+                {children}
+              </TipsProvider>
+            </WorkoutProvider>
+          </AuthWrapper>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

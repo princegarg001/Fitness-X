@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Calendar, Dumbbell, TrendingUp, Filter } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar, Dumbbell, Filter, TrendingUp } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function WorkoutHistoryView() {
   const { token } = useAuth()
@@ -42,9 +43,12 @@ export default function WorkoutHistoryView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Workout History</h2>
-        <p className="text-muted-foreground">View all your logged workouts</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Workout History</h2>
+          <p className="text-muted-foreground">View all your logged workouts</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

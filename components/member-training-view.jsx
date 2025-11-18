@@ -1,22 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/hooks/use-auth"
+import { api } from "@/lib/api-client"
 import { CheckCircle2, Clock, Dumbbell } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function MemberTrainingView() {
   const { token } = useAuth()
@@ -70,9 +71,12 @@ export default function MemberTrainingView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">My Training Programs</h2>
-        <p className="text-muted-foreground">Track your assigned workouts and training progress</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">My Training Programs</h2>
+          <p className="text-muted-foreground">Track your assigned workouts and training progress</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

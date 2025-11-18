@@ -1,4 +1,4 @@
-# FitFlow - Complete Fitness Tracker System
+# Fitness-X - Complete Fitness Tracker System
 
 A full-stack fitness tracking application with workout logging, gym discovery, face recognition enrollment, and analytics dashboard.
 

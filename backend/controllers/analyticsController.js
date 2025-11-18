@@ -1,6 +1,6 @@
-import Workout from "../models/Workout.js"
-import User from "../models/User.js"
 import SessionEvent from "../models/SessionEvent.js"
+import User from "../models/User.js"
+import Workout from "../models/Workout.js"
 
 export const getCalorieLeaderboard = async (req, res) => {
   try {
@@ -32,7 +32,7 @@ export const getCalorieLeaderboard = async (req, res) => {
         },
       },
       {
-        $unwind: "$user",
+        $unwind: "$user", 
       },
       {
         $sort: { totalCalories: -1 },
@@ -87,6 +87,7 @@ export const getActiveUsers = async (req, res) => {
 export const getUserStats = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const startOfWeek = new Date()
     startOfWeek.setDate(startOfWeek.getDate() - 7)
@@ -172,6 +173,7 @@ export const getGymAnalytics = async (req, res) => {
 export const getTrainerAssignments = async (req, res) => {
   try {
     const trainer = await User.findOne({ uid: req.user.uid })
+    if (!trainer) return res.status(401).json({ error: "Unauthorized" })
 
     if (trainer.role !== "trainer" && trainer.role !== "admin") {
       return res.status(403).json({ error: "Only trainers and admins can view assignments" })
@@ -217,6 +219,7 @@ export const getTrainerAssignments = async (req, res) => {
 export const getWeeklyActivity = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const startOfWeek = new Date()
     startOfWeek.setDate(startOfWeek.getDate() - 7)
@@ -262,6 +265,7 @@ export const getWeeklyActivity = async (req, res) => {
 export const getExerciseBreakdown = async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid })
+    if (!user) return res.status(401).json({ error: "Unauthorized" })
 
     const startOfWeek = new Date()
     startOfWeek.setDate(startOfWeek.getDate() - 7)

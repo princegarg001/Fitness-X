@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Globe, Navigation, AlertCircle, Loader, ArrowRight } from "lucide-react"
+import { AlertCircle, ArrowRight, Globe, Loader, MapPin, Navigation, Phone } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function GymFinder() {
   const { token } = useAuth()
@@ -87,6 +88,13 @@ export default function GymFinder() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Find Gyms</h2>
+          <p className="text-muted-foreground">Discover fitness centers near you</p>
+        </div>
+        <ThemeToggle />
+      </div>
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle>Find Gyms Near You</CardTitle>

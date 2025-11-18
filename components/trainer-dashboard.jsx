@@ -1,14 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Users, CheckCircle, Clock, Zap } from "lucide-react"
+import { CheckCircle, Clock, Users, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function TrainerDashboard() {
   const { token } = useAuth()
@@ -116,13 +117,16 @@ export default function TrainerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Trainer Dashboard</h2>
-        <p className="text-muted-foreground">Manage your members and training programs</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Trainer Dashboard</h2>
+          <p className="text-muted-foreground">Manage your members and training programs</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               My Members
@@ -135,7 +139,7 @@ export default function TrainerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Completed
@@ -148,7 +152,7 @@ export default function TrainerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:scale-105">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               Pending

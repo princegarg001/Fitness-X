@@ -1,5 +1,5 @@
-import express from "express"
 import cors from "cors"
+import express from "express"
 // --- START: Environment Loading Fix ---
 import dotenv from "dotenv"
 import path from "path"
@@ -18,14 +18,15 @@ dotenv.config({ path: backendEnvPath })
 // --- END: Environment Loading Fix ---
 
 import mongoose from "mongoose"
+import { authMiddleware } from "./middleware/authMiddleware.js"
+import { errorMiddleware } from "./middleware/errorMiddleware.js"
+import analyticsRoutes from "./routes/analyticsRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import chatbotRoutes from "./routes/chatbotRoutes.js"
+import gymRoutes from "./routes/gymRoutes.js"
+import tipsRoutes from "./routes/tipsRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import workoutRoutes from "./routes/workoutRoutes.js"
-import gymRoutes from "./routes/gymRoutes.js"
-import analyticsRoutes from "./routes/analyticsRoutes.js"
-import chatbotRoutes from "./routes/chatbotRoutes.js"
-import { errorMiddleware } from "./middleware/errorMiddleware.js"
-import { authMiddleware } from "./middleware/authMiddleware.js"
 
 // --- Debugging for API Key ---
 // Debug Line 2: This should now be TRUE if the backend/.env loaded correctly
@@ -54,6 +55,7 @@ app.use("/api/users", authMiddleware, userRoutes)
 app.use("/api/workouts", authMiddleware, workoutRoutes)
 app.use("/api/gyms", authMiddleware, gymRoutes)
 app.use("/api/analytics", authMiddleware, analyticsRoutes)
+app.use("/api/tips", tipsRoutes)
 
 // Health check
 app.get("/api/health", (req, res) => {

@@ -13,7 +13,6 @@ export const findNearbyGyms = async (lat, lng, radiusKm = 5) => {
         },
       },
     })
-      .populate("members trainers")
       .limit(20)
 
     return gyms
